@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico">
+  <meta name="author" content="Camila Peretto">
+  <meta name="theme-color" content="#dceefb">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <title>PomoClock</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app">
+    <h1>Relógio Digital</h1>
+    <div class="clock">{{ horaFormatada }}</div>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const hora = ref(new Date());
+        const horaFormatada = computed(() =>
+          hora.value.toLocaleTimeString('pt-BR', { hour12: false })
+        );
+
+        onMounted(() => {
+          setInterval(() => {
+            hora.value = new Date();
+          }, 1000);
+        });
+
+        return { horaFormatada };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
