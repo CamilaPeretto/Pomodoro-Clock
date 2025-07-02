@@ -21,7 +21,7 @@
       <button @click="modo = 'digital'">Digital</button>
       <button @click="modo = 'analogico'">Analógico</button>
       <button @click="modo = 'cronometro'">Cronômetro</button>
-    </div>
+      <button @click="modo = 'temporizador'">Temporizador</button>
     </div>
 
     <!--Digital-->
@@ -45,6 +45,21 @@
         <button @click="resetar" :disabled="tempo === 0 && !rodando">Resetar</button>
       </div>
     </div>
+
+    <!-- Temporizador -->
+    <div v-if="modo === 'temporizador'">
+      <div>
+        <input v-model.number="temporizadorMin" type="number" min="0" placeholder="min"> :
+        <input v-model.number="temporizadorSeg" type="number" min="0" placeholder="seg">
+      </div>
+      <div class="temporizador-display">{{ tempoTemporizadorFormatado }}</div>
+      <div class="temporizador-botoes">
+        <button @click="iniciarTemporizador" :disabled="rodandoTemporizador">Iniciar</button>
+        <button @click="resetarTemporizador">Resetar</button>
+      </div>
+    </div>
+
+  </div>
 
   </div>
 
@@ -125,6 +140,41 @@
           tempo.value = 0;
         };
 
+        // Temporizador
+        const temporizadorMin = ref(0);
+        const temporizadorSeg = ref(0);
+        const tempoTemporizador = ref(0);
+        const rodandoTemporizador = ref(false);
+        let intervaloTemporizador = null;
+
+        const tempoTemporizadorFormatado = computed(() => {
+          const m = String(Math.floor(tempoTemporizador.value / 60)).padStart(2, '0');
+          const s = String(tempoTemporizador.value % 60).padStart(2, '0');
+          return `${m}:${s}`;
+        });
+
+        const iniciarTemporizador = () => {
+          tempoTemporizador.value = temporizadorMin.value * 60 + temporizadorSeg.value;
+          if (rodandoTemporizador.value || tempoTemporizador.value <= 0) return;
+          rodandoTemporizador.value = true;
+
+          intervaloTemporizador = setInterval(() => {
+            if (tempoTemporizador.value > 0) {
+              tempoTemporizador.value--;
+            } else {
+              clearInterval(intervaloTemporizador);
+              rodandoTemporizador.value = false;
+              alert(" Tempo esgotado!");
+            }
+          }, 1000);
+        };
+
+        const resetarTemporizador = () => {
+          clearInterval(intervaloTemporizador);
+          tempoTemporizador.value = 0;
+          rodandoTemporizador.value = false;
+        };
+
         onMounted(() => {
           atualizarHora();
           setInterval(atualizarHora, 1000);
@@ -142,7 +192,13 @@
           tempoFormatado,
           iniciar,
           pausar,
-          resetar
+          resetar,
+          temporizadorMin,
+          temporizadorSeg,
+          rodandoTemporizador,
+          tempoTemporizadorFormatado,
+          iniciarTemporizador,
+          resetarTemporizador
         };
       }
     }).mount('#app');
