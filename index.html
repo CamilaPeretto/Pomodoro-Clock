@@ -20,19 +20,32 @@
      <div class="menu">
       <button @click="modo = 'digital'">Digital</button>
       <button @click="modo = 'analogico'">Analógico</button>
+      <button @click="modo = 'cronometro'">Cronômetro</button>
+    </div>
     </div>
 
     <!--Digital-->
      <div v-if="modo === 'digital'" class="clock-digital">{{ horaFormatada }}</div>
 
     <!--Analógico-->
-     <div v-if="modo === 'analogico'" class="clock-container">
+     <div v-if="modo === 'analogico'" class="clock-analogico">
       <div class="hand hour" :style="{ transform: `rotate(${grausHora}deg)` }"></div>
       <div class="hand minute" :style="{ transform: `rotate(${grausMinuto}deg)` }"></div>
       <div class="hand second" :style="{ transform: `rotate(${grausSegundo}deg)` }"></div>
       <div v-for="numeroHora in 12" :key="'numeroHora-' + numeroHora" class="clock-number" :style="posicaoNumero(numeroHora)"> {{ numeroHora }} </div>
       <div class="center-dot"></div>
     </div>
+
+     <!-- Cronômetro -->
+    <div v-if="modo === 'cronometro'">
+      <div class="cronometro">{{ tempoFormatado }}</div>
+      <div class="cronometro-botoes">
+        <button @click="iniciar" :disabled="rodando">Iniciar</button>
+        <button @click="pausar" :disabled="!rodando">Pausar</button>
+        <button @click="resetar" :disabled="tempo === 0 && !rodando">Resetar</button>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -59,27 +72,58 @@
         // Atualiza relógio digital e analógico
         function atualizarHora() {
           hora.value = new Date();
-          const h = hora.value.getHours();
-          const m = hora.value.getMinutes();
-          const s = hora.value.getSeconds();
+          const horas = hora.value.getHours();
+          const minutos = hora.value.getMinutes();
+          const segundos = hora.value.getSeconds();
 
-          grausSegundo.value = s * 6;
-          grausMinuto.value = m * 6 + s * 0.1;
-          grausHora.value = (h % 12) * 30 + m * 0.5;
+          grausSegundo.value = segundos * 6;
+          grausMinuto.value = minutos * 6 + segundos * 0.1;
+          grausHora.value = (horas % 12) * 30 + minutos * 0.5;
         }
 
-        function posicaoNumero(n) {
-          const angulo = (n - 3) * 30;
-          const rad = angulo * (Math.PI / 180);
+        function posicaoNumero(numero) {
+          const angulo = (numero - 3) * 30;
+          const radiano = angulo * (Math.PI / 180);
           const centro = 150; 
           const raio = 120;  
-          const x = centro + raio * Math.cos(rad);
-          const y = centro + raio * Math.sin(rad);
+          const posicaox = centro + raio * Math.cos(radiano);
+          const posicaoy = centro + raio * Math.sin(radiano);
             return {
-              top: `${y}px`,
-              left: `${x}px`
+              top: `${posicaoy}px`,
+              left: `${posicaox}px`
             };
         }
+
+        // Cronômetro
+        const tempo = ref(0);
+        const rodando = ref(false);
+        const tempoFormatado = computed(() => {
+          const min = String(Math.floor(tempo.value / 60)).padStart(2, '0');
+          const seg = String(tempo.value % 60).padStart(2, '0');
+          return `${min}:${seg}`;
+        });
+
+        let intervalo = null;
+
+        const iniciar = () => {
+          if (!rodando.value) {
+            rodando.value = true;
+            intervalo = setInterval(() => {
+              tempo.value++;
+            }, 1000);
+          }
+        };
+
+        const pausar = () => {
+          rodando.value = false;
+          clearInterval(intervalo);
+          intervalo = null;
+        };
+
+        const resetar = () => {
+          pausar();
+          tempo.value = 0;
+        };
 
         onMounted(() => {
           atualizarHora();
@@ -92,7 +136,13 @@
           grausHora,
           grausMinuto,
           grausSegundo,
-          posicaoNumero
+          posicaoNumero,
+          tempo,
+          rodando,
+          tempoFormatado,
+          iniciar,
+          pausar,
+          resetar
         };
       }
     }).mount('#app');
