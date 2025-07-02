@@ -23,6 +23,7 @@
       <button @click="modo = 'cronometro'">Cronômetro</button>
       <button @click="modo = 'temporizador'">Temporizador</button>
       <button @click="modo = 'alarme'">Alarme</button>
+      <button @click="modo = 'pomodoro'">Pomodoro</button>
     </div>
 
     <!--Digital-->
@@ -60,6 +61,7 @@
       </div>
     </div>
 
+    <!-- Alarme -->
     <div v-if="modo === 'alarme'">
       <input v-model.number="alarmeHora" type="number" min="0" max="23" placeholder="hora">
       <input v-model.number="alarmeMin" type="number" min="0" max="59" placeholder="min">
@@ -68,6 +70,18 @@
       <div class="alarme-botoes">
         <button @click="ativarAlarme">Ativar</button>
         <button @click="cancelarAlarme">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Pomodoro -->
+    <div v-if="modo === 'pomodoro'">
+      <h2>{{ modoPomodoro === 'foco' ? ' Tempo de Foco' : ' Hora da Pausa' }}</h2>
+      <div class="clock-digital">{{ tempoPomodoroFormatado }}</div>
+      <div class="pomodoro-botoes">
+        <button @click="iniciarPomodoro">Iniciar</button>
+        <button @click="pausarPomodoro">Pausar</button>
+        <button @click="resetarPomodoro">Resetar</button>
+       <button @click="alternarPomodoro">Alternar</button>
       </div>
     </div>
 
@@ -87,6 +101,47 @@
         const alarmeMin = ref(0);
         const alarmeAtivo = ref(false);
         const mensagemAlarme = ref('');
+
+        const modoPomodoro = ref('foco');
+        const tempoPomodoro = ref(1500);
+        const rodandoPomodoro = ref(false);
+        let intervaloPomodoro = null;
+
+        const tempoPomodoroFormatado = computed(() => {
+          const minuto = String(Math.floor(tempoPomodoro.value / 60)).padStart(2, '0');
+          const segundo = String(tempoPomodoro.value % 60).padStart(2, '0');
+          return `${minuto}:${segundo}`;
+        });
+
+        const iniciarPomodoro = () => {
+          if (rodandoPomodoro.value) return;
+          rodandoPomodoro.value = true;
+          intervaloPomodoro = setInterval(() => {
+            if (tempoPomodoro.value > 0) {
+              tempoPomodoro.value--;
+            } else {
+              clearInterval(intervaloPomodoro);
+              rodandoPomodoro.value = false;
+              alert(modoPomodoro.value === 'foco' ? '⏳ Tempo de pausa!' : '🎯 Hora de focar!');
+              alternarPomodoro();
+            }
+          }, 1000);
+        };
+
+        const pausarPomodoro = () => {
+          clearInterval(intervaloPomodoro);
+          rodandoPomodoro.value = false;
+        };
+
+        const resetarPomodoro = () => {
+          pausarPomodoro();
+          tempoPomodoro.value = modoPomodoro.value === 'foco' ? 1500 : 300;
+        };
+
+        const alternarPomodoro = () => {
+          modoPomodoro.value = modoPomodoro.value === 'foco' ? 'pausa' : 'foco';
+          resetarPomodoro();
+        };
 
         // Relógio digital formatado
         const horaFormatada = computed(() =>
@@ -233,7 +288,15 @@
           alarmeAtivo,
           ativarAlarme,
           cancelarAlarme,
-          mensagemAlarme
+          mensagemAlarme,
+          modoPomodoro,
+          tempoPomodoro,
+          rodandoPomodoro,
+          tempoPomodoroFormatado,
+          iniciarPomodoro,
+          pausarPomodoro,
+          resetarPomodoro,
+          alternarPomodoro
         };
       }
     }).mount('#app');
