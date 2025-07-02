@@ -22,6 +22,7 @@
       <button @click="modo = 'analogico'">Analógico</button>
       <button @click="modo = 'cronometro'">Cronômetro</button>
       <button @click="modo = 'temporizador'">Temporizador</button>
+      <button @click="modo = 'alarme'">Alarme</button>
     </div>
 
     <!--Digital-->
@@ -59,10 +60,18 @@
       </div>
     </div>
 
-  </div>
+    <div v-if="modo === 'alarme'">
+      <input v-model.number="alarmeHora" type="number" min="0" max="23" placeholder="hora">
+      <input v-model.number="alarmeMin" type="number" min="0" max="59" placeholder="min">
+      <div class="alarme-relogio">{{ horaFormatada }}</div>
+      <div v-if="mensagemAlarme" class="mensagem-alarme">{{ mensagemAlarme }}</div>
+      <div class="alarme-botoes">
+        <button @click="ativarAlarme">Ativar</button>
+        <button @click="cancelarAlarme">Cancelar</button>
+      </div>
+    </div>
 
   </div>
-
   <script>
     const { createApp, ref, computed, onMounted } = Vue;
 
@@ -73,6 +82,11 @@
         const grausHora = ref(0);
         const grausMinuto = ref(0);
         const grausSegundo = ref(0);
+
+        const alarmeHora = ref(0);
+        const alarmeMin = ref(0);
+        const alarmeAtivo = ref(false);
+        const mensagemAlarme = ref('');
 
         // Relógio digital formatado
         const horaFormatada = computed(() =>
@@ -94,6 +108,11 @@
           grausSegundo.value = segundos * 6;
           grausMinuto.value = minutos * 6 + segundos * 0.1;
           grausHora.value = (horas % 12) * 30 + minutos * 0.5;
+
+          if (alarmeAtivo.value && horas === alarmeHora.value && minutos === alarmeMin.value && segundos === 0) {
+            alert(" Alarme disparado!");
+            cancelarAlarme();
+          }
         }
 
         function posicaoNumero(numero) {
@@ -107,6 +126,16 @@
               top: `${posicaoy}px`,
               left: `${posicaox}px`
             };
+        }
+
+        function ativarAlarme() {
+          alarmeAtivo.value = true;
+          mensagemAlarme.value = `Alarme configurado para ${String(alarmeHora.value).padStart(2, '0')}:${String(alarmeMin.value).padStart(2, '0')} com sucesso.`;
+        }
+
+        function cancelarAlarme() {
+          alarmeAtivo.value = false;
+          mensagemAlarme.value = '';
         }
 
         // Cronômetro
@@ -148,9 +177,9 @@
         let intervaloTemporizador = null;
 
         const tempoTemporizadorFormatado = computed(() => {
-          const m = String(Math.floor(tempoTemporizador.value / 60)).padStart(2, '0');
-          const s = String(tempoTemporizador.value % 60).padStart(2, '0');
-          return `${m}:${s}`;
+          const minuto = String(Math.floor(tempoTemporizador.value / 60)).padStart(2, '0');
+          const segundo = String(tempoTemporizador.value % 60).padStart(2, '0');
+          return `${minuto}:${segundo}`;
         });
 
         const iniciarTemporizador = () => {
@@ -198,7 +227,13 @@
           rodandoTemporizador,
           tempoTemporizadorFormatado,
           iniciarTemporizador,
-          resetarTemporizador
+          resetarTemporizador,
+          alarmeHora,
+          alarmeMin,
+          alarmeAtivo,
+          ativarAlarme,
+          cancelarAlarme,
+          mensagemAlarme
         };
       }
     }).mount('#app');
