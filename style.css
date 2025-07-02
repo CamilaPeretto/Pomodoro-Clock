@@ -45,7 +45,10 @@ h1 {
   margin-bottom: 2rem;
 }
 
-.menu button {
+.menu button,
+.cronometro-botoes button,
+.temporizador-botoes button,
+.alarme-botoes button {
   background: #a7c7a3;
   color: var(--branco);
   border: none;
@@ -54,15 +57,20 @@ h1 {
   font-weight: 600;
   cursor: pointer;
   font-family: 'Montserrat', sans-serif;
+  transition: background 0.2s ease;
 }
 
-.menu button:hover {
+.menu button:hover,
+.cronometro-botoes button:hover,
+.temporizador-botoes button:hover,
+.alarme-botoes button:hover {
   background: var(--verde-escuro);
 }
 
 .clock-digital,
 .cronometro,
-.temporizador-display {
+.temporizador-display,
+.alarme-relogio {
   font-size: 3rem;
   font-family: 'Courier New', Courier, monospace;
   color: var(--blue-sereno);
@@ -141,26 +149,9 @@ h1 {
   user-select: none;
 }
 
-.cronometro-botoes button,
-.temporizador-botoes button {
-  background: #a7c7a3;
-  color: var(--branco);
-  border: none;
-  padding: 0.5rem 1.2rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  transition: background 0.2s ease;
-}
-
-.cronometro-botoes button:hover,
-.temporizador-botoes button:hover {
-  background: var(--verde-escuro);
-}
-
 .cronometro-botoes,
-.temporizador-botoes {
+.temporizador-botoes,
+.alarme-botoes {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
@@ -184,10 +175,20 @@ input[type="number"] {
   font-family: 'Montserrat', sans-serif;
   outline: none;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 input[type="number"]:focus {
   border-color: var(--verde-escuro);
   box-shadow: 0 0 0 3px rgba(20, 83, 45, 0.2);
+}
+
+.mensagem-alarme {
+  font-size: 0.95rem;
+  color: var(--verde-escuro);
+  background-color: #ecfdf5;
+  border: 1px solid #a7c7a3;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  display: inline-block;
 }
