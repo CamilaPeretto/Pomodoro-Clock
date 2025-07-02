@@ -12,9 +12,27 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
+
   <div id="app">
-    <h1>Relógio Digital</h1>
-    <div class="clock">{{ horaFormatada }}</div>
+    <h1>PomoClock</h1>
+
+    <!--Navegação-->
+     <div class="menu">
+      <button @click="modo = 'digital'">Digital</button>
+      <button @click="modo = 'analogico'">Analógico</button>
+    </div>
+
+    <!--Digital-->
+     <div v-if="modo === 'digital'" class="clock-digital">{{ horaFormatada }}</div>
+
+    <!--Analógico-->
+     <div v-if="modo === 'analogico'" class="clock-container">
+      <div class="hand hour" :style="{ transform: `rotate(${grausHora}deg)` }"></div>
+      <div class="hand minute" :style="{ transform: `rotate(${grausMinuto}deg)` }"></div>
+      <div class="hand second" :style="{ transform: `rotate(${grausSegundo}deg)` }"></div>
+      <div v-for="numeroHora in 12" :key="'numeroHora-' + numeroHora" class="clock-number" :style="posicaoNumero(numeroHora)"> {{ numeroHora }} </div>
+      <div class="center-dot"></div>
+    </div>
   </div>
 
   <script>
@@ -22,20 +40,63 @@
 
     createApp({
       setup() {
+        const modo = ref('digital');
         const hora = ref(new Date());
+        const grausHora = ref(0);
+        const grausMinuto = ref(0);
+        const grausSegundo = ref(0);
+
+        // Relógio digital formatado
         const horaFormatada = computed(() =>
-          hora.value.toLocaleTimeString('pt-BR', { hour12: false })
+          hora.value.toLocaleTimeString('pt-BR', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
         );
 
+        // Atualiza relógio digital e analógico
+        function atualizarHora() {
+          hora.value = new Date();
+          const h = hora.value.getHours();
+          const m = hora.value.getMinutes();
+          const s = hora.value.getSeconds();
+
+          grausSegundo.value = s * 6;
+          grausMinuto.value = m * 6 + s * 0.1;
+          grausHora.value = (h % 12) * 30 + m * 0.5;
+        }
+
+        function posicaoNumero(n) {
+          const angulo = (n - 3) * 30;
+          const rad = angulo * (Math.PI / 180);
+          const centro = 150; 
+          const raio = 120;  
+          const x = centro + raio * Math.cos(rad);
+          const y = centro + raio * Math.sin(rad);
+            return {
+              top: `${y}px`,
+              left: `${x}px`
+            };
+        }
+
         onMounted(() => {
-          setInterval(() => {
-            hora.value = new Date();
-          }, 1000);
+          atualizarHora();
+          setInterval(atualizarHora, 1000);
         });
 
-        return { horaFormatada };
+        return {
+          modo,
+          horaFormatada,
+          grausHora,
+          grausMinuto,
+          grausSegundo,
+          posicaoNumero
+        };
       }
     }).mount('#app');
   </script>
+
 </body>
 </html>
