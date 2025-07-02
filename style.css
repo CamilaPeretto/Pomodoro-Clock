@@ -48,7 +48,8 @@ h1 {
 .menu button,
 .cronometro-botoes button,
 .temporizador-botoes button,
-.alarme-botoes button {
+.alarme-botoes button,
+.pomodoro-botoes button {
   background: #a7c7a3;
   color: var(--branco);
   border: none;
@@ -63,7 +64,8 @@ h1 {
 .menu button:hover,
 .cronometro-botoes button:hover,
 .temporizador-botoes button:hover,
-.alarme-botoes button:hover {
+.alarme-botoes button:hover,
+.pomodoro-botoes button:hover {
   background: var(--verde-escuro);
 }
 
@@ -151,7 +153,8 @@ h1 {
 
 .cronometro-botoes,
 .temporizador-botoes,
-.alarme-botoes {
+.alarme-botoes,
+.pomodoro-botoes {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
