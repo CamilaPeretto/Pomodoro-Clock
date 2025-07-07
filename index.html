@@ -3,20 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="favicon.ico">
+  
+  <!-- Metadados SEO -->
   <meta name="author" content="Camila Peretto">
-  <meta name="theme-color" content="#dceefb">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="description" content="PomoClock - Um relógio Pomodoro interativo com modos digital, analógico, cronômetro, temporizador e alarme.">
+  <meta name="keywords" content="Pomodoro, relógio, cronômetro, temporizador, alarme, Vue.js, JavaScript, HTML, CSS">
+  
+  <!-- Título da página -->
   <title>PomoClock</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.ico">
+  
+  <!-- Estilos -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Fontes do Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Vue 3 via CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
+
 <body>
 
   <div id="app">
     <h1>PomoClock</h1>
 
-    <!--Navegação-->
+    <!-- Navegação principal para alternar entre os modos do relógio -->
      <div class="menu">
       <button @click="modo = 'digital'">Digital</button>
       <button @click="modo = 'analogico'">Analógico</button>
@@ -26,58 +40,75 @@
       <button @click="modo = 'pomodoro'">Pomodoro</button>
     </div>
 
-    <!--Digital-->
+    <!-- Relógio Digital: formato HH:MM:SS -->
      <div v-if="modo === 'digital'" class="clock-digital">{{ horaFormatada }}</div>
 
-    <!--Analógico-->
+    <!-- Relógio Analógico: ponteiros e números dinâmicos -->
      <div v-if="modo === 'analogico'" class="clock-analogico">
+      <!-- Ponteiros animados com base na hora atual -->
       <div class="hand hour" :style="{ transform: `rotate(${grausHora}deg)` }"></div>
       <div class="hand minute" :style="{ transform: `rotate(${grausMinuto}deg)` }"></div>
       <div class="hand second" :style="{ transform: `rotate(${grausSegundo}deg)` }"></div>
-      <div v-for="numeroHora in 12" :key="'numeroHora-' + numeroHora" class="clock-number" :style="posicaoNumero(numeroHora)"> {{ numeroHora }} </div>
+      
+      <!-- Números de 1 a 12 posicionados com base em coordenadas trigonométricas -->
+      <div v-for="numeroHora in 12" :key="'numeroHora-' + numeroHora" class="clock-number" :style="posicaoNumero(numeroHora)"> 
+        {{ numeroHora }} 
+      </div>
+
+      <!-- Centro do relógio -->
       <div class="center-dot"></div>
     </div>
 
-     <!-- Cronômetro -->
+     <!-- Cronômetro: incrementa o tempo a cada segundo -->
     <div v-if="modo === 'cronometro'">
       <div class="cronometro">{{ tempoFormatado }}</div>
       <div class="cronometro-botoes">
+        <!-- Botões com controle de estado habilitado/desabilitado -->
         <button @click="iniciar" :disabled="rodando">Iniciar</button>
         <button @click="pausar" :disabled="!rodando">Pausar</button>
         <button @click="resetar" :disabled="tempo === 0 && !rodando">Resetar</button>
       </div>
     </div>
 
-    <!-- Temporizador -->
+    <!-- Temporizador: conta regressiva com entrada manual de tempo -->
     <div v-if="modo === 'temporizador'">
       <div>
+        <!-- Inputs de minutos e segundos vinculados com v-model.number para garantir tipo numérico -->
         <input v-model.number="temporizadorMin" type="number" min="0" placeholder="min"> :
         <input v-model.number="temporizadorSeg" type="number" min="0" placeholder="seg">
       </div>
+
       <div class="temporizador-display">{{ tempoTemporizadorFormatado }}</div>
       <div class="temporizador-botoes">
+        <!-- Impede nova contagem se o temporizador já estiver rodando -->
         <button @click="iniciarTemporizador" :disabled="rodandoTemporizador">Iniciar</button>
         <button @click="resetarTemporizador">Resetar</button>
       </div>
     </div>
 
-    <!-- Alarme -->
+    <!-- Alarme: usuário configura hora e minuto; dispara alerta visual -->
     <div v-if="modo === 'alarme'">
+      <!-- Inputs para horário alvo do alarme -->
       <input v-model.number="alarmeHora" type="number" min="0" max="23" placeholder="hora">
       <input v-model.number="alarmeMin" type="number" min="0" max="59" placeholder="min">
+      
       <div class="alarme-relogio">{{ horaFormatada }}</div>
+
+      <!-- Mensagem exibida após configuração de alarme -->
       <div v-if="mensagemAlarme" class="mensagem-alarme">{{ mensagemAlarme }}</div>
+      
       <div class="alarme-botoes">
         <button @click="ativarAlarme">Ativar</button>
         <button @click="cancelarAlarme">Cancelar</button>
       </div>
     </div>
 
-    <!-- Pomodoro -->
+    <!-- Pomodoro: alterna entre 25min de foco e 5min de pausa -->
     <div v-if="modo === 'pomodoro'">
       <h2>{{ modoPomodoro === 'foco' ? ' Tempo de Foco' : ' Hora da Pausa' }}</h2>
       <div class="clock-digital">{{ tempoPomodoroFormatado }}</div>
       <div class="pomodoro-botoes">
+        <!-- Botões de controle e alternância manual -->
         <button @click="iniciarPomodoro">Iniciar</button>
         <button @click="pausarPomodoro">Pausar</button>
         <button @click="resetarPomodoro">Resetar</button>
