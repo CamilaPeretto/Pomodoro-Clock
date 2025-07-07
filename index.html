@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Metadados SEO -->
+  <meta name="author" content="Camila Peretto">
+  <meta name="description" content="PomoClock - Um relógio Pomodoro interativo com modos digital, analógico, cronômetro, temporizador e alarme.">
+  <meta name="keywords" content="Pomodoro, relógio, cronômetro, temporizador, alarme, Vue.js, JavaScript, HTML, CSS">
+  
+  <!-- Título da página -->
+  <title>PomoClock</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.ico">
+  
+  <!-- Estilos -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Fontes do Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Vue 3 via CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+
+<body>
+
+  <div id="app">
+    <h1>PomoClock</h1>
+
+    <!-- Navegação principal para alternar entre os modos do relógio -->
+     <div class="menu">
+      <button @click="modo = 'digital'">Digital</button>
+      <button @click="modo = 'analogico'">Analógico</button>
+      <button @click="modo = 'cronometro'">Cronômetro</button>
+      <button @click="modo = 'temporizador'">Temporizador</button>
+      <button @click="modo = 'alarme'">Alarme</button>
+      <button @click="modo = 'pomodoro'">Pomodoro</button>
+    </div>
+
+    <!-- Relógio Digital: formato HH:MM:SS -->
+     <div v-if="modo === 'digital'" class="clock-digital">{{ horaFormatada }}</div>
+
+    <!-- Relógio Analógico: ponteiros e números dinâmicos -->
+     <div v-if="modo === 'analogico'" class="clock-analogico">
+      <!-- Ponteiros animados com base na hora atual -->
+      <div class="hand hour" :style="{ transform: `rotate(${grausHora}deg)` }"></div>
+      <div class="hand minute" :style="{ transform: `rotate(${grausMinuto}deg)` }"></div>
+      <div class="hand second" :style="{ transform: `rotate(${grausSegundo}deg)` }"></div>
+      
+      <!-- Números de 1 a 12 posicionados com base em coordenadas trigonométricas -->
+      <div v-for="numeroHora in 12" :key="'numeroHora-' + numeroHora" class="clock-number" :style="posicaoNumero(numeroHora)"> 
+        {{ numeroHora }} 
+      </div>
+
+      <!-- Centro do relógio -->
+      <div class="center-dot"></div>
+    </div>
+
+     <!-- Cronômetro: incrementa o tempo a cada segundo -->
+    <div v-if="modo === 'cronometro'">
+      <div class="cronometro">{{ tempoFormatado }}</div>
+      <div class="cronometro-botoes">
+        <!-- Botões com controle de estado habilitado/desabilitado -->
+        <button @click="iniciar" :disabled="rodando">Iniciar</button>
+        <button @click="pausar" :disabled="!rodando">Pausar</button>
+        <button @click="resetar" :disabled="tempo === 0 && !rodando">Resetar</button>
+      </div>
+    </div>
+
+    <!-- Temporizador: conta regressiva com entrada manual de tempo -->
+    <div v-if="modo === 'temporizador'">
+      <div>
+        <!-- Inputs de minutos e segundos vinculados com v-model.number para garantir tipo numérico -->
+        <input v-model.number="temporizadorMin" type="number" min="0" placeholder="min"> :
+        <input v-model.number="temporizadorSeg" type="number" min="0" placeholder="seg">
+      </div>
+
+      <div class="temporizador-display">{{ tempoTemporizadorFormatado }}</div>
+      <div class="temporizador-botoes">
+        <!-- Impede nova contagem se o temporizador já estiver rodando -->
+        <button @click="iniciarTemporizador" :disabled="rodandoTemporizador">Iniciar</button>
+        <button @click="resetarTemporizador">Resetar</button>
+      </div>
+    </div>
+
+    <!-- Alarme: usuário configura hora e minuto; dispara alerta visual -->
+    <div v-if="modo === 'alarme'">
+      <!-- Inputs para horário alvo do alarme -->
+      <input v-model.number="alarmeHora" type="number" min="0" max="23" placeholder="hora">
+      <input v-model.number="alarmeMin" type="number" min="0" max="59" placeholder="min">
+      
+      <div class="alarme-relogio">{{ horaFormatada }}</div>
+
+      <!-- Mensagem exibida após configuração de alarme -->
+      <div v-if="mensagemAlarme" class="mensagem-alarme">{{ mensagemAlarme }}</div>
+      
+      <div class="alarme-botoes">
+        <button @click="ativarAlarme">Ativar</button>
+        <button @click="cancelarAlarme">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Pomodoro: alterna entre 25min de foco e 5min de pausa -->
+    <div v-if="modo === 'pomodoro'">
+      <h2>{{ modoPomodoro === 'foco' ? ' Tempo de Foco' : ' Hora da Pausa' }}</h2>
+      <div class="clock-digital">{{ tempoPomodoroFormatado }}</div>
+      <div class="pomodoro-botoes">
+        <!-- Botões de controle e alternância manual -->
+        <button @click="iniciarPomodoro">Iniciar</button>
+        <button @click="pausarPomodoro">Pausar</button>
+        <button @click="resetarPomodoro">Resetar</button>
+       <button @click="alternarPomodoro">Alternar</button>
+      </div>
+    </div>
+
+  </div>
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const modo = ref('digital');
+        const hora = ref(new Date());
+        const grausHora = ref(0);
+        const grausMinuto = ref(0);
+        const grausSegundo = ref(0);
+
+        const alarmeHora = ref(0);
+        const alarmeMin = ref(0);
+        const alarmeAtivo = ref(false);
+        const mensagemAlarme = ref('');
+
+        const modoPomodoro = ref('foco');
+        const tempoPomodoro = ref(1500);
+        const rodandoPomodoro = ref(false);
+        let intervaloPomodoro = null;
+
+        const tempoPomodoroFormatado = computed(() => {
+          const minuto = String(Math.floor(tempoPomodoro.value / 60)).padStart(2, '0');
+          const segundo = String(tempoPomodoro.value % 60).padStart(2, '0');
+          return `${minuto}:${segundo}`;
+        });
+
+        const iniciarPomodoro = () => {
+          if (rodandoPomodoro.value) return;
+          rodandoPomodoro.value = true;
+          intervaloPomodoro = setInterval(() => {
+            if (tempoPomodoro.value > 0) {
+              tempoPomodoro.value--;
+            } else {
+              clearInterval(intervaloPomodoro);
+              rodandoPomodoro.value = false;
+              alert(modoPomodoro.value === 'foco' ? '⏳ Tempo de pausa!' : '🎯 Hora de focar!');
+              alternarPomodoro();
+            }
+          }, 1000);
+        };
+
+        const pausarPomodoro = () => {
+          clearInterval(intervaloPomodoro);
+          rodandoPomodoro.value = false;
+        };
+
+        const resetarPomodoro = () => {
+          pausarPomodoro();
+          tempoPomodoro.value = modoPomodoro.value === 'foco' ? 1500 : 300;
+        };
+
+        const alternarPomodoro = () => {
+          modoPomodoro.value = modoPomodoro.value === 'foco' ? 'pausa' : 'foco';
+          resetarPomodoro();
+        };
+
+        // Relógio digital formatado
+        const horaFormatada = computed(() =>
+          hora.value.toLocaleTimeString('pt-BR', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
+        );
+
+        // Atualiza relógio digital e analógico
+        function atualizarHora() {
+          hora.value = new Date();
+          const horas = hora.value.getHours();
+          const minutos = hora.value.getMinutes();
+          const segundos = hora.value.getSeconds();
+
+          grausSegundo.value = segundos * 6;
+          grausMinuto.value = minutos * 6 + segundos * 0.1;
+          grausHora.value = (horas % 12) * 30 + minutos * 0.5;
+
+          if (alarmeAtivo.value && horas === alarmeHora.value && minutos === alarmeMin.value && segundos === 0) {
+            alert(" Alarme disparado!");
+            cancelarAlarme();
+          }
+        }
+
+        function posicaoNumero(numero) {
+          const angulo = (numero - 3) * 30;
+          const radiano = angulo * (Math.PI / 180);
+          const centro = 150; 
+          const raio = 120;  
+          const posicaox = centro + raio * Math.cos(radiano);
+          const posicaoy = centro + raio * Math.sin(radiano);
+            return {
+              top: `${posicaoy}px`,
+              left: `${posicaox}px`
+            };
+        }
+
+        function ativarAlarme() {
+          alarmeAtivo.value = true;
+          mensagemAlarme.value = `Alarme configurado para ${String(alarmeHora.value).padStart(2, '0')}:${String(alarmeMin.value).padStart(2, '0')} com sucesso.`;
+        }
+
+        function cancelarAlarme() {
+          alarmeAtivo.value = false;
+          mensagemAlarme.value = '';
+        }
+
+        // Cronômetro
+        const tempo = ref(0);
+        const rodando = ref(false);
+        const tempoFormatado = computed(() => {
+          const min = String(Math.floor(tempo.value / 60)).padStart(2, '0');
+          const seg = String(tempo.value % 60).padStart(2, '0');
+          return `${min}:${seg}`;
+        });
+
+        let intervalo = null;
+
+        const iniciar = () => {
+          if (!rodando.value) {
+            rodando.value = true;
+            intervalo = setInterval(() => {
+              tempo.value++;
+            }, 1000);
+          }
+        };
+
+        const pausar = () => {
+          rodando.value = false;
+          clearInterval(intervalo);
+          intervalo = null;
+        };
+
+        const resetar = () => {
+          pausar();
+          tempo.value = 0;
+        };
+
+        // Temporizador
+        const temporizadorMin = ref(0);
+        const temporizadorSeg = ref(0);
+        const tempoTemporizador = ref(0);
+        const rodandoTemporizador = ref(false);
+        let intervaloTemporizador = null;
+
+        const tempoTemporizadorFormatado = computed(() => {
+          const minuto = String(Math.floor(tempoTemporizador.value / 60)).padStart(2, '0');
+          const segundo = String(tempoTemporizador.value % 60).padStart(2, '0');
+          return `${minuto}:${segundo}`;
+        });
+
+        const iniciarTemporizador = () => {
+          tempoTemporizador.value = temporizadorMin.value * 60 + temporizadorSeg.value;
+          if (rodandoTemporizador.value || tempoTemporizador.value <= 0) return;
+          rodandoTemporizador.value = true;
+
+          intervaloTemporizador = setInterval(() => {
+            if (tempoTemporizador.value > 0) {
+              tempoTemporizador.value--;
+            } else {
+              clearInterval(intervaloTemporizador);
+              rodandoTemporizador.value = false;
+              alert(" Tempo esgotado!");
+            }
+          }, 1000);
+        };
+
+        const resetarTemporizador = () => {
+          clearInterval(intervaloTemporizador);
+          tempoTemporizador.value = 0;
+          rodandoTemporizador.value = false;
+        };
+
+        onMounted(() => {
+          atualizarHora();
+          setInterval(atualizarHora, 1000);
+        });
+
+        return {
+          modo,
+          horaFormatada,
+          grausHora,
+          grausMinuto,
+          grausSegundo,
+          posicaoNumero,
+          tempo,
+          rodando,
+          tempoFormatado,
+          iniciar,
+          pausar,
+          resetar,
+          temporizadorMin,
+          temporizadorSeg,
+          rodandoTemporizador,
+          tempoTemporizadorFormatado,
+          iniciarTemporizador,
+          resetarTemporizador,
+          alarmeHora,
+          alarmeMin,
+          alarmeAtivo,
+          ativarAlarme,
+          cancelarAlarme,
+          mensagemAlarme,
+          modoPomodoro,
+          tempoPomodoro,
+          rodandoPomodoro,
+          tempoPomodoroFormatado,
+          iniciarPomodoro,
+          pausarPomodoro,
+          resetarPomodoro,
+          alternarPomodoro
+        };
+      }
+    }).mount('#app');
+  </script>
+
+</body>
+</html>

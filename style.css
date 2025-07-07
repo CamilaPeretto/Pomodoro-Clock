@@ -1,0 +1,196 @@
+:root {
+  --bg-gradient: linear-gradient(135deg, #dceefb 0%, #f0f9ff 100%);
+  --blue-sereno: #3b82f6;
+  --verde-escuro: #14532d;
+  --branco: #ffffff;
+  --cinza-pedra: #475569;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-gradient);
+  font-family: 'Montserrat', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#app {
+  background: var(--branco);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(20, 83, 45, 0.15);
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  color: var(--verde-escuro);
+  margin-bottom: 1.5rem;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.menu button,
+.cronometro-botoes button,
+.temporizador-botoes button,
+.alarme-botoes button,
+.pomodoro-botoes button {
+  background: #a7c7a3;
+  color: var(--branco);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  transition: background 0.2s ease;
+}
+
+.menu button:hover,
+.cronometro-botoes button:hover,
+.temporizador-botoes button:hover,
+.alarme-botoes button:hover,
+.pomodoro-botoes button:hover {
+  background: var(--verde-escuro);
+}
+
+.clock-digital,
+.cronometro,
+.temporizador-display,
+.alarme-relogio {
+  font-size: 3rem;
+  color: var(--blue-sereno);
+  margin: 1.5rem 0;
+}
+
+.clock-analogico {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border: 8px solid var(--blue-sereno);
+  border-radius: 50%;
+  margin: 0 auto;
+  background: var(--branco);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+}
+
+.hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom;
+  background: var(--verde-escuro);
+  border-radius: 2px;
+}
+
+.hour {
+  width: 6px;
+  height: 70px;
+  z-index: 3;
+}
+
+.minute {
+  width: 4px;
+  height: 100px;
+  z-index: 2;
+}
+
+.second {
+  width: 2px;
+  height: 120px;
+  background: var(--blue-sereno);
+  z-index: 1;
+}
+
+.center-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--verde-escuro);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.clock-number {
+  position: absolute;
+  width: 30px;
+  height: 45px;
+  text-align: center;
+  line-height: 30px;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--cinza-pedra);
+  transform: translate(-65%, -50%);
+}
+
+.cronometro {
+  font-size: 3rem;
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--blue-sereno);
+  margin-bottom: 2rem;
+  user-select: none;
+}
+
+.cronometro-botoes,
+.temporizador-botoes,
+.alarme-botoes,
+.pomodoro-botoes {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+button:disabled {
+  background: #c4d6c8;
+  cursor: default;
+}
+
+input[type="number"] {
+  width: 70px;
+  padding: 0.5rem;
+  margin: 0.5rem 0.3rem;
+  font-size: 1rem;
+  border: 2px solid var(--cinza-pedra);
+  border-radius: 0.5rem;
+  text-align: center;
+  font-family: 'Montserrat', sans-serif;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+input[type="number"]:focus {
+  border-color: var(--verde-escuro);
+  box-shadow: 0 0 0 3px rgba(20, 83, 45, 0.2);
+}
+
+.mensagem-alarme {
+  font-size: 0.95rem;
+  color: var(--verde-escuro);
+  background-color: #ecfdf5;
+  border: 1px solid #a7c7a3;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
