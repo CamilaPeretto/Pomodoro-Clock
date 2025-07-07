@@ -74,7 +74,6 @@ h1 {
 .temporizador-display,
 .alarme-relogio {
   font-size: 3rem;
-  font-family: 'Courier New', Courier, monospace;
   color: var(--blue-sereno);
   margin: 1.5rem 0;
 }
