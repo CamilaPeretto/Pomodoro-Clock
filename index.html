@@ -13,7 +13,7 @@
   <title>PomoClock</title>
   
   <!-- Favicon -->
-  <link rel="icon" href="favicon.ico">
+  <link rel="icon" href="./img/tecnica-pomodoro.png">
   
   <!-- Estilos -->
   <link rel="stylesheet" href="style.css">
@@ -117,11 +117,16 @@
     </div>
 
   </div>
+  
+  <!-- Áudio do alarme/timer/Pomodoro -->
+  <audio id="som-alarme" src="./som/Ding-sound-effect.wav" preload="auto"></audio>
+
   <script>
     const { createApp, ref, computed, onMounted } = Vue;
 
     createApp({
       setup() {
+        const somAlarme = new Audio('./som/Ding-sound-effect.wav');
         const modo = ref('digital');
         const hora = ref(new Date());
         const grausHora = ref(0);
@@ -153,6 +158,7 @@
             } else {
               clearInterval(intervaloPomodoro);
               rodandoPomodoro.value = false;
+               somAlarme.play();
               alert(modoPomodoro.value === 'foco' ? '⏳ Tempo de pausa!' : '🎯 Hora de focar!');
               alternarPomodoro();
             }
@@ -196,6 +202,7 @@
           grausHora.value = (horas % 12) * 30 + minutos * 0.5;
 
           if (alarmeAtivo.value && horas === alarmeHora.value && minutos === alarmeMin.value && segundos === 0) {
+            somAlarme.play();
             alert(" Alarme disparado!");
             cancelarAlarme();
           }
@@ -279,6 +286,7 @@
             } else {
               clearInterval(intervaloTemporizador);
               rodandoTemporizador.value = false;
+              somAlarme.play();
               alert(" Tempo esgotado!");
             }
           }, 1000);
